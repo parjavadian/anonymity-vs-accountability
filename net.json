@@ -1,0 +1,31 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"id": 0, "identity_type": "anonymous", "credulity": 0.9, "tendency_to_share": 0.8},
+    {"id": 1, "identity_type": "verified", "credulity": 0.9, "tendency_to_share": 0.9},
+    {"id": 2, "identity_type": "anonymous", "credulity": 0.4, "tendency_to_share": 0.7},
+    {"id": 3, "identity_type": "anonymous", "credulity": 0.8, "tendency_to_share": 0.5},
+    {"id": 4, "identity_type": "verified", "credulity": 0.2, "tendency_to_share": 0.2},
+    {"id": 5, "identity_type": "anonymous", "credulity": 0.5, "tendency_to_share": 0.6},
+    {"id": 6, "identity_type": "verified", "credulity": 0.7, "tendency_to_share": 0.4},
+    {"id": 7, "identity_type": "anonymous", "credulity": 0.3, "tendency_to_share": 0.9},
+    {"id": 8, "identity_type": "verified", "credulity": 0.95, "tendency_to_share": 0.3},
+    {"id": 9, "identity_type": "anonymous", "credulity": 0.6, "tendency_to_share": 0.7}
+  ],
+  "edges": [
+    {"source": 0, "target": 1, "trust_weight": 0.1},
+    {"source": 0, "target": 2, "trust_weight": 0.4},
+    {"source": 1, "target": 3, "trust_weight": 0.6},
+    {"source": 2, "target": 3, "trust_weight": 0.5},
+    {"source": 2, "target": 5, "trust_weight": 0.8},
+    {"source": 3, "target": 4, "trust_weight": 0.3},
+    {"source": 4, "target": 5, "trust_weight": 0.2},
+    {"source": 5, "target": 6, "trust_weight": 0.7},
+    {"source": 6, "target": 7, "trust_weight": 0.6},
+    {"source": 7, "target": 8, "trust_weight": 0.5},
+    {"source": 8, "target": 9, "trust_weight": 0.4},
+    {"source": 9, "target": 0, "trust_weight": 0.3}
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"id": 0, "identity_type": "anonymous", "credulity": 0.6, "tendency_to_share": 0.9},
+    {"id": 1, "identity_type": "verified", "credulity": 1.0, "tendency_to_share": 0.3},
+    {"id": 2, "identity_type": "anonymous", "credulity": 0.4, "tendency_to_share": 0.7},
+    {"id": 3, "identity_type": "anonymous", "credulity": 0.8, "tendency_to_share": 0.2},
+    {"id": 4, "identity_type": "verified", "credulity": 0.1, "tendency_to_share": 0.1},
+    {"id": 5, "identity_type": "anonymous", "credulity": 0.5, "tendency_to_share": 0.6}
+  ],
+  "links": [
+    {"source": 0, "target": 1, "trust_weight": 1.0},
+    {"source": 0, "target": 2, "trust_weight": 0.4},
+    {"source": 1, "target": 2, "trust_weight": 0.7},
+    {"source": 2, "target": 3, "trust_weight": 0.3},
+    {"source": 3, "target": 4, "trust_weight": 0.1},
+    {"source": 2, "target": 5, "trust_weight": 0.8},
+    {"source": 5, "target": 4, "trust_weight": 0.2}
+  ]
+}
