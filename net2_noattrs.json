@@ -1,0 +1,36 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"id": 0, "identity_type": "anonymous", "credulity": 0.65},
+    {"id": 1, "identity_type": "anonymous", "credulity": 0.6},
+    {"id": 2, "identity_type": "anonymous", "credulity": 0.7},
+
+    {"id": 3, "identity_type": "anonymous", "is_fact_checker": true},
+
+    {"id": 4, "identity_type": "anonymous", "credulity": 0.6},
+    {"id": 5, "identity_type": "anonymous", "credulity": 0.55},
+    {"id": 6, "identity_type": "anonymous", "credulity": 0.65},
+
+    {"id": 7, "identity_type": "verified", "credulity": 0.25}
+  ],
+  "edges": [
+    {"source": 0, "target": 1},
+    {"source": 0, "target": 2},
+
+    {"source": 1, "target": 3},
+
+    {"source": 3, "target": 4},
+
+    {"source": 4, "target": 5},
+    {"source": 4, "target": 6},
+
+    {"source": 6, "target": 7},
+    {"source": 7, "target": 4},
+
+    {"source": 6, "target": 5},
+
+    {"source": 2, "target": 6}
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {"id": 0, "identity_type": "anonymous", "credulity": 0.65, "tendency_to_share": 0.7},
+    {"id": 1, "identity_type": "anonymous", "credulity": 0.6, "tendency_to_share": 0.65},
+    {"id": 2, "identity_type": "anonymous", "credulity": 0.7, "tendency_to_share": 0.7},
+
+    {"id": 3, "identity_type": "anonymous", "is_fact_checker": true},
+
+    {"id": 4, "identity_type": "anonymous", "credulity": 0.6, "tendency_to_share": 0.65},
+    {"id": 5, "identity_type": "anonymous", "credulity": 0.55, "tendency_to_share": 0.6},
+    {"id": 6, "identity_type": "anonymous", "credulity": 0.65, "tendency_to_share": 0.65},
+
+    {"id": 7, "identity_type": "verified", "credulity": 0.25, "tendency_to_share": 0.3}
+  ],
+  "edges": [
+    {"source": 0, "target": 1, "trust_weight": 0.4},
+    {"source": 0, "target": 2, "trust_weight": 0.5},
+
+    {"source": 1, "target": 3, "trust_weight": 0.6},
+
+    {"source": 3, "target": 4, "trust_weight": 0.5},
+
+    {"source": 4, "target": 5, "trust_weight": 0.4},
+    {"source": 4, "target": 6, "trust_weight": 0.5},
+
+    {"source": 6, "target": 7, "trust_weight": 0.5},
+    {"source": 7, "target": 4, "trust_weight": 0.7},
+
+    {"source": 6, "target": 5, "trust_weight": 0.4},
+
+    {"source": 2, "target": 6, "trust_weight": 0.55}
+  ]
+}

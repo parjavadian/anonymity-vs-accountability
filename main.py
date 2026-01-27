@@ -88,38 +88,15 @@ def simulate(
     G,
     initial_infected_list,
     timesteps=10,
-    reduce_sharing_prob=0.0,
     random_seed=None,
     default_propensity_anonymous=0.8,
     default_propensity_verified=0.3,
     default_trust_from_verified=0.9,
     default_trust_from_anonymous=0.3
 ):
-    """
-    Simulate misinformation spread on a directed network, taking into account
-    node anonymity/accountability.
-
-    Args:
-        G (nx.DiGraph): NetworkX directed graph with node attributes:
-            - identity_type: "anonymous" or "verified"
-            - tendency_to_share: optional override
-            - credulity: float [0,1]
-        initial_infected_list (list): nodes to seed initially infected
-        timesteps (int): number of simulation steps
-        reduce_sharing_prob (float): global reduction factor [0,1]
-        random_seed (int): optional random seed
-        default_propensity_anonymous (float): default tendency_to_share for anonymous nodes
-        default_propensity_verified (float): default tendency_to_share for verified nodes
-        default_trust_from_verified (float): default trust value if neighbor is verified
-        default_trust_from_anonymous (float): default trust value if neighbor is anonymous
-
-    Returns:
-        dict: results with time series, infection times, and final infected nodes
-    """
+    
     if random_seed is not None:
         random.seed(random_seed)
-
-    platform_factor = max(0.0, 1.0 - float(reduce_sharing_prob))
 
     # Reset node states
     for n, data in G.nodes(data=True):
@@ -128,7 +105,7 @@ def simulate(
 
     # Seed initial infected
     for s in initial_infected_list:
-        if s is not None and get_node_attr(G, s, "state", None) is not None:
+        if s is not None and not get_node_attr(G, s, "is_fact_checker", False) and get_node_attr(G, s, "state", None) is not None:
             set_node_attr(G, s, "state", "infected")
             set_node_attr(G, s, "infection_time", 0)
 
@@ -145,6 +122,8 @@ def simulate(
         exposures = defaultdict(list)
 
         for u in list(current_infected):
+            if get_node_attr(G, u, "is_fact_checker", False):
+                continue
             # Determine the node's effective tendency_to_share
             node_data = G.nodes[u]
             u_identity = node_data.get("identity_type", "anonymous")
@@ -154,6 +133,8 @@ def simulate(
             )
 
             for v in neighbors(G, u):
+                if get_node_attr(G, v, "is_fact_checker", False):
+                    continue
                 v_state = get_node_attr(G, v, "state", "uninfected")
                 if v_state == "uninfected":
                     cred_v = get_node_attr(G, v, "credulity", 0.0)
@@ -165,7 +146,7 @@ def simulate(
                         trust = default_trust_from_verified if neighbor_identity == "verified" else default_trust_from_anonymous
 
                     # Probability of exposure
-                    p_exposure = cred_v * u_tendency * trust * platform_factor
+                    p_exposure = cred_v * u_tendency * trust
                     if p_exposure > 0:
                         exposures[v].append(p_exposure)
 

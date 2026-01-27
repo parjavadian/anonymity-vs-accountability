@@ -21,16 +21,23 @@ def nx_to_pyvis(G, infected_nodes, pos):
     for n, data in G.nodes(data=True):
         x, y = pos[n]
         color = "red" if n in infected_nodes else "#cccccc"
-        shape = "dot" if data.get("identity_type") == "anonymous" else "star"
+
+        if data.get("is_fact_checker", False):
+            shape = "triangleDown"
+        else:
+            shape = "dot" if data.get("identity_type") == "anonymous" else "star"
+
         net.add_node(
             n,
             label=str(n),
             color=color,
-            title=f"Node {n}<br>identity: {data.get('identity_type')}<br>credulity: {data.get('credulity')}<br>tendency_to_share: {data.get('tendency_to_share')}",
-            x=x*200,
-            y=y*200,
+            title=f"Node {n}<br>"
+                  f"identity: {data.get('identity_type')}<br>"
+                  f"credulity: {data.get('credulity')}<br>"
+                  f"tendency_to_share: {data.get('tendency_to_share')}",
+            x=x * 200,
+            y=y * 200,
             fixed=True,
-            font={"size": 1000, "color": "black", "face": "arial"},
             shape=shape
         )
 
@@ -46,12 +53,12 @@ def nx_to_pyvis(G, infected_nodes, pos):
 # -------------------------
 if "results" not in st.session_state:
     st.session_state.results = None
-if "network_html" not in st.session_state:
-    st.session_state.network_html = None
 if "current_timestep" not in st.session_state:
     st.session_state.current_timestep = 0
 if "initial_infected" not in st.session_state:
     st.session_state.initial_infected = []
+if "pos" not in st.session_state:
+    st.session_state.pos = None
 
 
 # -------------------------
@@ -66,58 +73,76 @@ st.title("Misinformation Spread Simulator")
 # -------------------------
 st.sidebar.header("Simulation Parameters")
 
-timesteps = st.sidebar.slider("Timesteps", 1, 30, 10)
+timesteps = st.sidebar.number_input(
+    "Number of timesteps",
+    min_value=1,
+    max_value=200,
+    value=20,
+    step=1
+)
 
-# Optional: Upload network JSON
 uploaded_file = st.sidebar.file_uploader("Upload network JSON", type="json")
 if uploaded_file is not None:
     data = json.load(uploaded_file)
     G = nx.node_link_graph(data)
-    st.sidebar.write(f"Loaded graph from upload: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+    st.sidebar.write(f"Loaded graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 else:
     G = default_G
     st.sidebar.write(f"Using default network: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 
-# Node layout
-undirected_G = G.to_undirected()
-st.session_state.pos = nx.spring_layout(undirected_G, seed=46)
 
-# Initial infected nodes selection
+undirected_G = G.to_undirected()
+st.session_state.pos = nx.spring_layout(undirected_G, seed=42)
+
+
+# -------------------------
+# Initial infected selection
+# -------------------------
 all_nodes = get_nodes(G)
-if not st.session_state.initial_infected:
-    st.session_state.initial_infected = [all_nodes[0]]
+
+non_fact_checker_nodes = [
+    n for n in all_nodes if not G.nodes[n].get("is_fact_checker", False)
+]
+
+st.session_state.initial_infected = [
+    n for n in st.session_state.initial_infected if n in non_fact_checker_nodes
+]
+
+if not st.session_state.initial_infected and non_fact_checker_nodes:
+    st.session_state.initial_infected = [non_fact_checker_nodes[0]]
 
 st.session_state.initial_infected = st.sidebar.multiselect(
-    "Initial infected nodes",
-    options=all_nodes,
+    "Initial infected nodes (non-fact-checkers only)",
+    options=non_fact_checker_nodes,
     default=st.session_state.initial_infected
 )
 
-# Random initial infected
-num_random = st.sidebar.slider("Number of random initial infected nodes", 1, len(all_nodes), 1)
+num_random = st.sidebar.number_input(
+    "Number of random initial infected nodes",
+    min_value=1,
+    max_value=len(non_fact_checker_nodes),
+    value=1,
+    step=1
+)
+
 if st.sidebar.button("Randomize initial infected"):
-    st.session_state.initial_infected = random.sample(all_nodes, k=num_random)
-    st.sidebar.write(f"Random initial infected nodes: {sorted(st.session_state.initial_infected)}")
+    st.session_state.initial_infected = random.sample(non_fact_checker_nodes, k=num_random)
+
+
+
 st.sidebar.subheader("Anonymity / Accountability Defaults")
 
-default_propensity_anonymous = st.sidebar.slider(
-    "Default tendency to share (anonymous node)",
-    0.0, 1.0, 0.8, 0.05
-)
-default_propensity_verified = st.sidebar.slider(
-    "Default tendency to share (verified node)",
-    0.0, 1.0, 0.3, 0.05
-)
-default_trust_from_verified = st.sidebar.slider(
-    "Default trust if neighbor is verified",
-    0.0, 1.0, 0.9, 0.05
-)
-default_trust_from_anonymous = st.sidebar.slider(
-    "Default trust if neighbor is anonymous",
-    0.0, 1.0, 0.3, 0.05
-)
+default_propensity_anonymous = st.sidebar.slider("Default tendency to share (anonymous)", 0.0, 1.0, 0.8, 0.05)
+default_propensity_verified = st.sidebar.slider("Default tendency to share (verified)", 0.0, 1.0, 0.3, 0.05)
+default_trust_from_verified = st.sidebar.slider("Default trust if neighbor is verified", 0.0, 1.0, 0.9, 0.05)
+default_trust_from_anonymous = st.sidebar.slider("Default trust if neighbor is anonymous", 0.0, 1.0, 0.3, 0.05)
+
+
+# -------------------------
 # Run simulation
+# -------------------------
 run = st.sidebar.button("Run simulation")
+
 if run:
     G_run = G.copy()
     st.session_state.results = simulate(
@@ -133,56 +158,58 @@ if run:
 
 
 # -------------------------
-# Visualization and metrics
+# Visualization
 # -------------------------
 results = st.session_state.results
-if results is not None:
-    # Metrics download
-    zip_bytes = export_simulation_metrics(results)
-    st.download_button(
-        label="Download all metrics",
-        data=zip_bytes,
-        file_name="simulation_metrics.zip",
-        mime="application/zip"
-    )
 
+if results is not None:
     st.subheader("Interactive network view")
 
-    # Step buttons
     col1, col2, col3 = st.columns(3)
+
     with col1:
         if st.button("Step -1") and st.session_state.current_timestep > 0:
             st.session_state.current_timestep -= 1
+
     with col2:
         if st.button("Step +1") and st.session_state.current_timestep < len(results["infection_history"]) - 1:
             st.session_state.current_timestep += 1
+
     with col3:
         if st.button("Go to end"):
             st.session_state.current_timestep = len(results["infection_history"]) - 1
 
-    # Infection at current timestep
+    st.markdown("""
+**Legend:**
+
+🔴 infected  
+⚪ uninfected  
+● anonymous  
+⭐ verified  
+🔻 fact-checker  
+""")
+
     infected_at_t = results["infection_history"][st.session_state.current_timestep]
 
-    G_vis = G.copy()
-    net = nx_to_pyvis(G_vis, infected_at_t, st.session_state.pos)
+    net = nx_to_pyvis(G, infected_at_t, st.session_state.pos)
 
-    # Generate HTML once per timestep
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
     net.save_graph(tmp_file.name)
     with open(tmp_file.name, "r", encoding="utf-8") as f:
-        st.session_state.network_html = f.read()
+        html = f.read()
     os.unlink(tmp_file.name)
 
-    # Render network
-    st.components.v1.html(st.session_state.network_html, height=650)
+    st.components.v1.html(html, height=650)
     st.write(f"Current timestep: {st.session_state.current_timestep}")
 
-    # Infection over time plot
+    # Plot
     st.subheader("Infection over time")
     fig, ax = plt.subplots()
     ax.plot(results["time_series_total"], label="Total infected")
     ax.plot(results["time_series_new"], label="Newly infected")
-    ax.set_xlabel("Timestep")
-    ax.set_ylabel("Number of nodes")
     ax.legend()
     st.pyplot(fig)
+
+    # Download metrics
+    zip_bytes = export_simulation_metrics(results)
+    st.download_button("Download all metrics", zip_bytes, "simulation_metrics.zip")

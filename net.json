@@ -1,9 +1,9 @@
 {
-  "directed": false,
+  "directed": true,
   "multigraph": false,
   "graph": {},
   "nodes": [
-    {"id": 0, "identity_type": "anonymous", "credulity": 0.9, "tendency_to_share": 0.8},
+    {"id": 0, "identity_type": "anonymous", "credulity": 0.9, "tendency_to_share": 0.9, "is_fact_checker": true},
     {"id": 1, "identity_type": "verified", "credulity": 0.9, "tendency_to_share": 0.9},
     {"id": 2, "identity_type": "anonymous", "credulity": 0.4, "tendency_to_share": 0.7},
     {"id": 3, "identity_type": "anonymous", "credulity": 0.8, "tendency_to_share": 0.5},
